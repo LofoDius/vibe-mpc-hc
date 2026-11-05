@@ -3988,3 +3988,11 @@ msgctxt "IDS_SUBMENU_COPYURL"
 msgid "Copy URL"
 msgstr ""
 
+
+msgctxt "IDS_TRACK_REGEX_HINT"
+msgid "Regular expression searched in the full track name (case insensitive). Example: Russian|English. Use ^ and $ to match the whole name. Empty means no preference."
+msgstr "Регулярное выражение для поиска по полному названию дорожки без учёта регистра. Пример: Russian|English. Для совпадения с названием целиком используйте ^ и $. Пустое поле — без предпочтения."
+
+msgctxt "IDS_TRACK_REGEX_ERROR"
+msgid "Invalid track regular expression. Correct its syntax before applying settings."
+msgstr "Некорректное регулярное выражение для выбора дорожки. Исправьте синтаксис перед применением настроек."

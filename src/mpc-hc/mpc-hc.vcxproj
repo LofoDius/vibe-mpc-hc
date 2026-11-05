@@ -403,6 +403,7 @@
     <ClInclude Include="SVGImage.h" />
     <ClInclude Include="TextPassThruFilter.h" />
     <ClInclude Include="TimerWrappers.h" />
+    <ClInclude Include="TrackPreference.h" />
     <ClInclude Include="Translations.h" />
     <ClInclude Include="TunerScanDlg.h" />
     <ClInclude Include="..\..\include\version.h" />

@@ -20,6 +20,7 @@
  */
 
 #include "stdafx.h"
+#include "TrackPreference.h"
 #include "MainFrm.h"
 #include "mplayerc.h"
 
@@ -11535,18 +11536,11 @@ int CMainFrame::SetupAudioStreams()
     if (pSS && SUCCEEDED(pSS->Count(&cStreams)) && cStreams > 1) {
         const CAppSettings& s = AfxGetAppSettings();
 
-        CAtlArray<CString> langs;
-        int tPos = 0;
-        CString lang = s.strAudiosLanguageOrder.Tokenize(_T(",; "), tPos);
-        while (tPos != -1) {
-            lang.MakeLower();
-            langs.Add(lang);
-            // Try to match the full language if possible
-            lang = ISOLang::ISO639XToLanguage(CStringA(lang));
-            if (!lang.IsEmpty()) {
-                langs.Add(lang.MakeLower());
-            }
-            lang = s.strAudiosLanguageOrder.Tokenize(_T(",; "), tPos);
+        // Invalid expressions from manually edited settings must not prevent playback.
+        std::unique_ptr<TrackPreference> preference;
+        try {
+            preference.reset(new TrackPreference(s.strAudioTrackRegex));
+        } catch (const std::regex_error&) {
         }
 
         int selected = -1, id = 0;
@@ -11599,24 +11593,10 @@ int CMainFrame::SetupAudioStreams()
                 rating += 1;
             }
 
-            name.Trim();
-            name.MakeLower();
-
-            for (size_t j = 0; j < langs.GetCount(); j++) {
-                int num = _tstoi(langs[j]) - 1;
-                if (num >= 0) { // this is track number
-                    if (id != num) {
-                        continue;  // not matched
-                    }
-                } else { // this is lang string
-                    int len = langs[j].GetLength();
-                    if (name.Left(len) != langs[j] && name.Find(_T("[") + langs[j]) < 0) {
-                        continue; // not matched
-                    }
-                }
-                rating += 16 * int(langs.GetCount() - j);
-                break;
+            if (preference && preference->Matches(name)) {
+                rating += 16;
             }
+            name.MakeLower();
             if (name.Find(_T("[default,forced]")) != -1) { // for LAV Splitter
                 rating += 4 + 2;
             }
@@ -11648,20 +11628,10 @@ int CMainFrame::SetupSubtitleStreams()
 
     if (!m_pSubStreams.IsEmpty()) {
         bool externalPriority = false;
-        std::list<ISOLangT<CString>> langs;
-        int tPos = 0;
-        CString lang = s.strSubtitlesLanguageOrder.Tokenize(_T(",; "), tPos);
-        while (tPos != -1) {
-            lang.MakeLower();
-            ISOLangT<CString> l = ISOLang::ISO639XToISOLang(CStringA(lang));
-            if (l.name.IsEmpty()) {
-                l.name = lang;
-            } else {
-                l.name.MakeLower();
-            }
-            langs.emplace_back(l);
-
-            lang = s.strSubtitlesLanguageOrder.Tokenize(_T(",; "), tPos);
+        std::unique_ptr<TrackPreference> preference;
+        try {
+            preference.reset(new TrackPreference(s.strSubtitleTrackRegex));
+        } catch (const std::regex_error&) {
         }
 
         int i = 0;
@@ -11726,38 +11696,12 @@ int CMainFrame::SetupSubtitleStreams()
                     pSubStream->GetStreamInfo(j, &pName, &lcid);
                 }
                 CString name(pName);
-                name.Trim();
-                name.MakeLower();
-
-                size_t k = 0;
-                for (const auto& l : langs) {
-                    int num = _tstoi(l.name) - 1;
-                    if (num >= 0) { // this is track number
-                        if (i != num) {
-                            k++;
-                            continue;  // not matched
-                        }
-                    } else { // this is lang string
-                        // check the LCID first but keep looking if it doesn't match
-                        if (lcid == 0 || lcid == LCID(-1) || lcid != l.lcid) {
-                            auto findCode = [](const CString & name, const CString & code) {
-                                int nPos = code.IsEmpty() ? -1 : name.Find(code);
-                                return ((nPos == 0 && name.GetLength() == code.GetLength())
-                                        || (nPos > 0 && (name[nPos - 1] == _T('[') || name[nPos - 1] == _T('\t'))))
-                                       || (nPos > 0 && name[nPos - 1] == _T('.') && (name.GetLength() >= (nPos + code.GetLength() + 1)) && name[nPos + code.GetLength()] == _T('.'));
-                            };
-                            // match anything that starts with the language name or that seems to use a code that matches
-                            if (name.Find(l.name) != 0 && !findCode(name, l.name) && !findCode(name, l.iso6392) && !findCode(name, l.iso6391)) {
-                                k++;
-                                continue; // not matched
-                            }
-                        }
-                    }
-                    rating += 16 * int(langs.size() - k);
-                    break;
+                if (preference && preference->Matches(name)) {
+                    rating += 16;
                 }
+                name.MakeLower();
                 if (externalPriority) { // External tracks are given a higher priority than language matches
-                    rating += 16 * int(langs.size() + 1);
+                    rating += 32;
                 }
                 if (s.bPreferDefaultForcedSubtitles) {
                     if (name.Find(_T("[default,forced]")) != -1) { // for LAV Splitter

@@ -820,6 +820,8 @@ void CAppSettings::SaveSettings()
 
     pApp->WriteProfileString(IDS_R_SETTINGS, IDS_RS_AUDIORENDERERTYPE, CString(strAudioRendererDisplayName));
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_AUTOLOADAUDIO, fAutoloadAudio);
+    pApp->WriteProfileString(IDS_R_SETTINGS, _T("AudioTrackRegex"), CString(strAudioTrackRegex));
+    pApp->WriteProfileString(IDS_R_SETTINGS, _T("SubtitleTrackRegex"), CString(strSubtitleTrackRegex));
     pApp->WriteProfileString(IDS_R_SETTINGS, IDS_RS_SUBTITLESLANGORDER, CString(strSubtitlesLanguageOrder));
     pApp->WriteProfileString(IDS_R_SETTINGS, IDS_RS_AUDIOSLANGORDER, CString(strAudiosLanguageOrder));
     pApp->WriteProfileInt(IDS_R_SETTINGS, IDS_RS_BLOCKVSFILTER, fBlockVSFilter);
@@ -1350,6 +1352,8 @@ void CAppSettings::LoadSettings()
 
     strAudioRendererDisplayName = pApp->GetProfileString(IDS_R_SETTINGS, IDS_RS_AUDIORENDERERTYPE);
     fAutoloadAudio = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_AUTOLOADAUDIO, TRUE);
+    strAudioTrackRegex = pApp->GetProfileString(IDS_R_SETTINGS, _T("AudioTrackRegex"));
+    strSubtitleTrackRegex = pApp->GetProfileString(IDS_R_SETTINGS, _T("SubtitleTrackRegex"));
     strSubtitlesLanguageOrder = pApp->GetProfileString(IDS_R_SETTINGS, IDS_RS_SUBTITLESLANGORDER);
     strAudiosLanguageOrder = pApp->GetProfileString(IDS_R_SETTINGS, IDS_RS_AUDIOSLANGORDER);
     fBlockVSFilter = !!pApp->GetProfileInt(IDS_R_SETTINGS, IDS_RS_BLOCKVSFILTER, TRUE);

@@ -25,6 +25,7 @@
 #include "PPagePlayback.h"
 #include "Monitors.h"
 #include "MultiMonitor.h"
+#include "TrackPreference.h"
 
 
 // CPPagePlayback dialog
@@ -73,8 +74,8 @@ void CPPagePlayback::DoDataExchange(CDataExchange* pDX)
     DDX_Check(pDX, IDC_CHECK2, m_fAutoloadAudio);
     DDX_Check(pDX, IDC_CHECK7, m_fEnableWorkerThreadForOpening);
     DDX_Check(pDX, IDC_CHECK6, m_fReportFailedPins);
-    DDX_Text(pDX, IDC_EDIT2, m_subtitlesLanguageOrder);
-    DDX_Text(pDX, IDC_EDIT3, m_audiosLanguageOrder);
+    DDX_Text(pDX, IDC_EDIT2, m_subtitleTrackRegex);
+    DDX_Text(pDX, IDC_EDIT3, m_audioTrackRegex);
     DDX_Check(pDX, IDC_CHECK4, m_fAllowOverridingExternalSplitterChoice);
     DDX_Text(pDX, IDC_VOLUMESTEP, m_nVolumeStep);
     DDX_Text(pDX, IDC_EDIT4, m_nAutoFitFactor);
@@ -131,8 +132,8 @@ BOOL CPPagePlayback::OnInitDialog()
     m_fAutoloadAudio = s.fAutoloadAudio;
     m_fEnableWorkerThreadForOpening = s.fEnableWorkerThreadForOpening;
     m_fReportFailedPins = s.fReportFailedPins;
-    m_subtitlesLanguageOrder = s.strSubtitlesLanguageOrder;
-    m_audiosLanguageOrder = s.strAudiosLanguageOrder;
+    m_subtitleTrackRegex = s.strSubtitleTrackRegex;
+    m_audioTrackRegex = s.strAudioTrackRegex;
     m_fAllowOverridingExternalSplitterChoice = s.bAllowOverridingExternalSplitterChoice;
 
     m_zoomlevelctrl.AddString(ResStr(IDS_ZOOM_50));
@@ -161,8 +162,8 @@ BOOL CPPagePlayback::OnInitDialog()
     EnableToolTips(TRUE);
     CreateToolTip();
 
-    m_wndToolTip.AddTool(GetDlgItem(IDC_EDIT2), ResStr(IDS_LANG_PREF_EXAMPLE));
-    m_wndToolTip.AddTool(GetDlgItem(IDC_EDIT3), ResStr(IDS_LANG_PREF_EXAMPLE));
+    m_wndToolTip.AddTool(GetDlgItem(IDC_EDIT2), ResStr(IDS_TRACK_REGEX_HINT));
+    m_wndToolTip.AddTool(GetDlgItem(IDC_EDIT3), ResStr(IDS_TRACK_REGEX_HINT));
     m_wndToolTip.AddTool(GetDlgItem(IDC_CHECK4), ResStr(IDS_OVERRIDE_EXT_SPLITTER_CHOICE));
 
     UpdateData(FALSE);
@@ -171,9 +172,34 @@ BOOL CPPagePlayback::OnInitDialog()
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
+bool CPPagePlayback::ValidateTrackRegex(CPropertySheet* sheet)
+{
+    for (int control : { IDC_EDIT2, IDC_EDIT3 }) {
+        CString pattern;
+        if (GetSafeHwnd()) {
+            GetDlgItemText(control, pattern);
+        } else {
+            const auto& s = AfxGetAppSettings();
+            pattern = control == IDC_EDIT2 ? s.strSubtitleTrackRegex : s.strAudioTrackRegex;
+        }
+        try {
+            TrackPreference preference(pattern.GetString());
+        } catch (const std::regex_error&) {
+            AfxMessageBox(IDS_TRACK_REGEX_ERROR, MB_ICONERROR | MB_OK);
+            (sheet ? sheet : static_cast<CPropertySheet*>(GetParent()))->SetActivePage(this);
+            GetDlgItem(control)->SetFocus();
+            static_cast<CEdit*>(GetDlgItem(control))->SetSel(0, -1);
+            return false;
+        }
+    }
+    return true;
+}
+
 BOOL CPPagePlayback::OnApply()
 {
-    UpdateData();
+    if (!ValidateTrackRegex() || !UpdateData()) {
+        return FALSE;
+    }
 
     CAppSettings& s = AfxGetAppSettings();
 
@@ -191,8 +217,8 @@ BOOL CPPagePlayback::OnApply()
     s.fAutoloadAudio = !!m_fAutoloadAudio;
     s.fEnableWorkerThreadForOpening = !!m_fEnableWorkerThreadForOpening;
     s.fReportFailedPins = !!m_fReportFailedPins;
-    s.strSubtitlesLanguageOrder = m_subtitlesLanguageOrder;
-    s.strAudiosLanguageOrder = m_audiosLanguageOrder;
+    s.strSubtitleTrackRegex = m_subtitleTrackRegex;
+    s.strAudioTrackRegex = m_audioTrackRegex;
     s.bAllowOverridingExternalSplitterChoice = !!m_fAllowOverridingExternalSplitterChoice;
 
     // There is no main frame when the option dialog is displayed stand-alone

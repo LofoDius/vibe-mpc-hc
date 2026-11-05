@@ -502,6 +502,8 @@ public:
     bool            fRememberZoomLevel;
     int             nAutoFitFactor;
     int             iZoomLevel;
+    CStringW        strAudioTrackRegex;
+    CStringW        strSubtitleTrackRegex;
     CStringW        strAudiosLanguageOrder;
     CStringW        strSubtitlesLanguageOrder;
     bool            fEnableWorkerThreadForOpening;

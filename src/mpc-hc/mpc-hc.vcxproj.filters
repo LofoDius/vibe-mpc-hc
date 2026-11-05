@@ -752,6 +752,9 @@
     <ClInclude Include="TimerWrappers.h">
       <Filter>Helpers</Filter>
     </ClInclude>
+    <ClInclude Include="TrackPreference.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
     <ClInclude Include="Translations.h">
       <Filter>Player Config</Filter>
     </ClInclude>

@@ -455,8 +455,8 @@ msgid "%"
 msgstr "%"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
-msgid "Default track preference"
-msgstr "Выбор дорожек по умолчанию"
+msgid "Default track preference (regexp)"
+msgstr "Выбор дорожек (regexp)"
 
 msgctxt "IDD_PPAGEPLAYBACK_IDC_STATIC"
 msgid "Subtitles:"

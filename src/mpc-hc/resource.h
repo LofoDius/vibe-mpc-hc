@@ -1572,6 +1572,8 @@
 #define IDS_CMD_VIEWPRESET              57536
 #define IDS_CMD_MUTE                    57537
 #define IDS_CMD_VOLUME                  57538
+#define IDS_TRACK_REGEX_HINT            57539
+#define IDS_TRACK_REGEX_ERROR           57540
 
 // Next default values for new objects
 // 

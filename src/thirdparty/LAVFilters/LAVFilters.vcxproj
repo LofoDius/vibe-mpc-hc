@@ -48,6 +48,10 @@
     <NMakeReBuildCommandLine>build_lavfilters.bat Rebuild $(Platform) $(Configuration) VS2015 Silent Nocolors</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>build_lavfilters.bat Clean $(Platform) $(Configuration) VS2015 Silent Nocolors</NMakeCleanCommandLine>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(MPCHC_WINDOWS11)' == 'true'">
+    <NMakeBuildCommandLine>echo Using packaged LAV Filters</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>echo Using packaged LAV Filters</NMakeReBuildCommandLine>
+  </PropertyGroup>
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>
   <ItemGroup>

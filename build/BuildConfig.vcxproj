@@ -40,6 +40,9 @@
     <BaseIntermediateOutputPath>$(IntDir)</BaseIntermediateOutputPath>
     <NMakeBuildCommandLine>..\update_version.bat --quiet</NMakeBuildCommandLine>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(MPCHC_WINDOWS11)' == 'true'">
+    <NMakeBuildCommandLine>powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(SolutionDir)build\Update-Version.ps1"</NMakeBuildCommandLine>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

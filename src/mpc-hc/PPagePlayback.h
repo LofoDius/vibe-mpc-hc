@@ -58,8 +58,8 @@ public:
     BOOL m_fAutoloadAudio;
     BOOL m_fEnableWorkerThreadForOpening;
     BOOL m_fReportFailedPins;
-    CString m_subtitlesLanguageOrder;
-    CString m_audiosLanguageOrder;
+    CString m_subtitleTrackRegex;
+    CString m_audioTrackRegex;
     BOOL m_fAllowOverridingExternalSplitterChoice;
 
     CComboBox m_zoomlevelctrl;
@@ -76,6 +76,7 @@ protected:
     DECLARE_MESSAGE_MAP()
 
 public:
+    bool ValidateTrackRegex(CPropertySheet* sheet = nullptr);
     afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
     afx_msg void OnBnClickedRadio12(UINT nID);
     afx_msg void OnUpdateLoopNum(CCmdUI* pCmdUI);

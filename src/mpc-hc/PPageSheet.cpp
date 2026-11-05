@@ -105,6 +105,7 @@ CTreeCtrl* CPPageSheet::CreatePageTreeObject()
 BEGIN_MESSAGE_MAP(CPPageSheet, CTreePropSheet)
     ON_WM_CONTEXTMENU()
     ON_COMMAND(ID_APPLY_NOW, OnApply)
+    ON_COMMAND(IDOK, OnApply)
 END_MESSAGE_MAP()
 
 BOOL CPPageSheet::OnInitDialog()
@@ -131,6 +132,12 @@ void CPPageSheet::OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/)
 
 void CPPageSheet::OnApply()
 {
+    // Validate before any page applies settings.
+    if (!m_playback.ValidateTrackRegex(this)) {
+        SetActivePage(&m_playback);
+        return;
+    }
+
     // Execute the default actions first
     Default();
 

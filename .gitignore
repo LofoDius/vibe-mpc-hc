@@ -36,3 +36,6 @@
 /src/thirdparty/DoctorDump/obj
 /src/thirdparty/LAVFilters/obj
 ipch
+
+/build/dependencies/
+/build/*.log

@@ -17,9 +17,11 @@ REM You should have received a copy of the GNU General Public License
 REM along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+IF /I "%MPCHC_WINDOWS11%" == "true" GOTO Assemble
 CALL "%~dp0..\common.bat" :SubSetPath
 IF %ERRORLEVEL% NEQ 0 EXIT /B 1
 CALL "%~dp0..\common.bat" :SubDoesExist yasm.exe
 IF %ERRORLEVEL% NEQ 0 EXIT /B 1
 
+:Assemble
 yasm.exe %*

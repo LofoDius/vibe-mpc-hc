@@ -310,7 +310,7 @@ BEGIN
     EDITTEXT        IDC_EDIT4,238,81,35,14,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,273,81,11,14
     LTEXT           "%",IDC_STATIC3,277,84,8,8
-    GROUPBOX        "Default track preference",IDC_STATIC,137,104,154,83
+    GROUPBOX        "Default track preference (regexp)",IDC_STATIC,137,104,154,83
     LTEXT           "Subtitles:",IDC_STATIC,142,117,44,8
     LTEXT           "Audio:",IDC_STATIC,142,134,44,8
     EDITTEXT        IDC_EDIT3,190,132,94,13,ES_AUTOHSCROLL
@@ -3521,6 +3521,8 @@ END
 
 STRINGTABLE
 BEGIN
+    IDS_TRACK_REGEX_HINT   "Regular expression searched in the full track name (case insensitive). Example: Russian|English. Use ^ and $ to match the whole name. Empty means no preference."
+    IDS_TRACK_REGEX_ERROR  "Invalid track regular expression. Correct its syntax before applying settings."
     IDS_LANG_PREF_EXAMPLE   "Enter your preferred languages here.\nFor example, type: ""eng jap swe"""
     IDS_OVERRIDE_EXT_SPLITTER_CHOICE 
                             "External splitters can have their own language preference options thus MPC-HC default behavior is not to change their initial choice.\nEnable this option if you want MPC-HC to control external splitters."
