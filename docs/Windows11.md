@@ -27,6 +27,7 @@ The script downloads pinned, SHA-256 checked archives into `build/dependencies`:
 
 - Microsoft.DXSDK.D3DX 9.29.952.8 from NuGet, including the app-local D3DX9 DLL.
 - Official LAV Filters 0.83 x64 binaries, including their licenses and dependencies.
+- Python 2.7.18 from NuGet, used locally for the legacy translation generator.
 
 These replace the legacy DirectX SDK installer and the MSYS2/FFmpeg source build
 for this build path. No global codec registration or DirectX runtime installer
@@ -40,6 +41,8 @@ For a debug build:
 ```
 
 Its output is `bin/mpc-hc_x64_Debug`. Build diagnostics are written to
-`build/windows11-build.log`. The Windows 11 script builds the player and its
-required libraries; it does not generate the installer or translated resource
-DLLs. The player can run with its built-in English resources.
+`build/windows11-build.log`; translation diagnostics are written to
+`build/windows11-translations.log`. Both Release and Debug builds include all
+translated resource DLLs in the output's `Lang` directory.
+Keep `Lang` beside the executable when distributing the player. The script does
+not generate the installer.

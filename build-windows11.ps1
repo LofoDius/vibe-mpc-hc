@@ -31,6 +31,7 @@ try {
     }
     Get-Archive 'https://api.nuget.org/v3-flatcontainer/microsoft.dxsdk.d3dx/9.29.952.8/microsoft.dxsdk.d3dx.9.29.952.8.nupkg' 'd3dx' "$deps/d3dx" 'build/native/include/d3dx9.h' 'EAD0906AE8A26C18A7525DA7490127A2110F7C58F18293738283E30E97C6EA4B'
     Get-Archive 'https://github.com/Nevcairiel/LAVFilters/releases/download/0.83/LAVFilters-0.83-x64.zip' 'lav-0.83-x64' "$deps/lav-0.83-x64" 'LAVSplitter.ax' '0126982F47157BB86A6DBB43C4F332F7F98BEBA9AD552C19B65F9DB2E7D4F186'
+    Get-Archive 'https://api.nuget.org/v3-flatcontainer/python2/2.7.18/python2.2.7.18.nupkg' 'python2' "$deps/python2" 'tools/python.exe' 'C8DF5BD4C103F37A946E94F942A5625CDD84665EE160BBCC57AF93857C892E22'
     $output = Join-Path $root 'bin/mpc-hc_x64'
     if ($Configuration -eq 'Debug') { $output += '_Debug' }
     New-Item -ItemType Directory -Path "$output/LAVFilters64" -Force | Out-Null
@@ -46,6 +47,13 @@ try {
     $buildCommand = "`"$devcmd`" -arch=x64 -host_arch=x64 -vcvars_ver=14.16 && msbuild mpc-hc.sln /m:1 /nr:false /t:Build /p:Configuration=$Configuration /p:Platform=x64 /p:PlatformToolset=v141 /p:MPCHC_WINDOWS11=true /p:MPCHC_WINSDK_VER=$WindowsSdkVersion /nologo /v:minimal /fl /flp:logfile=build\windows11-build.log;verbosity=minimal"
     & $env:ComSpec /d /s /c $buildCommand
     if ($LASTEXITCODE -ne 0) { throw 'Build failed. See build/windows11-build.log.' }
+    & "$deps/python2/tools/python.exe" "$root/build/Generate-Translations.py"
+    if ($LASTEXITCODE -ne 0) { throw 'Translation resource generation failed.' }
+    # BuildAll selects each Release language configuration. Disable its legacy
+    # SyncTranslations dependency: resources were generated above without editing PO files.
+    $translationCommand = "`"$devcmd`" -arch=x64 -host_arch=x64 -vcvars_ver=14.16 && msbuild src\mpc-hc\mpcresources\BuildAll.vcxproj /m:1 /nr:false /t:Build /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v141 /p:MPCHC_WINDOWS11=true /p:MPCHC_WINSDK_VER=$WindowsSdkVersion /p:BuildProjectReferences=false /p:SolutionDir=`"$root/`" /p:OutDir=`"$output/Lang/`" /nologo /v:minimal /fl /flp:logfile=build\windows11-translations.log;verbosity=minimal"
+    & $env:ComSpec /d /s /c $translationCommand
+    if ($LASTEXITCODE -ne 0) { throw 'Translation build failed. See build/windows11-translations.log.' }
     Write-Host "Built: $output/mpc-hc64.exe"
 } finally {
     if (Get-Variable previousWindows11 -ErrorAction SilentlyContinue) { $env:MPCHC_WINDOWS11 = $previousWindows11 }
