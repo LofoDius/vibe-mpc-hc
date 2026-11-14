@@ -8426,7 +8426,12 @@ void CMainFrame::OnNavigateSkip(UINT nID)
             if (nID == ID_NAVIGATE_SKIPBACK) {
                 SendMessage(WM_COMMAND, ID_NAVIGATE_SKIPBACKFILE);
             } else if (nID == ID_NAVIGATE_SKIPFORWARD) {
-                SendMessage(WM_COMMAND, ID_NAVIGATE_SKIPFORWARDFILE);
+                if (m_pCB->ChapGetCount() == 0) {
+                    // Without chapters, seek forward 90 seconds instead of opening the next file.
+                    SeekTo(m_wndSeekBar.GetPos() + 90i64 * 10000000);
+                } else {
+                    SendMessage(WM_COMMAND, ID_NAVIGATE_SKIPFORWARDFILE);
+                }
             }
         }
     } else if (GetPlaybackMode() == PM_DVD) {
@@ -8468,6 +8473,7 @@ void CMainFrame::OnUpdateNavigateSkip(CCmdUI* pCmdUI)
                         && m_iDVDDomain != DVD_DOMAIN_VideoManagerMenu
                         && m_iDVDDomain != DVD_DOMAIN_VideoTitleSetMenu)
                        || (GetPlaybackMode() == PM_FILE  && s.fUseSearchInFolder)
+                       || (GetPlaybackMode() == PM_FILE  && pCmdUI->m_nID == ID_NAVIGATE_SKIPFORWARD)
                        || (GetPlaybackMode() == PM_FILE  && !s.fUseSearchInFolder && (m_wndPlaylistBar.GetCount() > 1 || m_pCB->ChapGetCount() > 1))
                        || (GetPlaybackMode() == PM_DIGITAL_CAPTURE && !m_pDVBState->bSetChannelActive)));
 }
