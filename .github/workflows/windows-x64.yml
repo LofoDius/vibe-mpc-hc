@@ -18,10 +18,13 @@ jobs:
       contents: read
 
     steps:
-      - name: Checkout with submodules
+      - name: Checkout with top-level submodules
         uses: actions/checkout@v4
         with:
-          submodules: recursive
+          # LAVFilters' nested submodules include obsolete git://git.1f0.de hosts.
+          # The Windows 11 build uses prebuilt LAV Filters, so only top-level
+          # submodules are required (including sanear).
+          submodules: true
 
       - name: Install YASM
         shell: pwsh
