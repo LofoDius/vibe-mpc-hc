@@ -1,0 +1,75 @@
+name: Build MPC-HC Windows x64
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [develop]
+    paths:
+      - 'src/**'
+      - 'build/**'
+      - 'build-windows11.ps1'
+      - '.github/workflows/windows-x64.yml'
+
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 120
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install YASM
+        shell: pwsh
+        run: |
+          choco install yasm -y --no-progress
+          $yasm = Get-ChildItem 'C:\ProgramData\chocolatey\bin\yasm*.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($yasm) {
+            $yasmDir = Split-Path $yasm.FullName
+            "$yasmDir" | Out-File -FilePath $env:GITHUB_PATH -Append
+          }
+          if (!(Get-Command yasm.exe -ErrorAction SilentlyContinue)) {
+            throw 'YASM not found after installation'
+          }
+
+      - name: Ensure VS 2017 (v141) toolchain and MFC
+        shell: pwsh
+        run: |
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+          $vs = & $vswhere -latest -products '*' -requires Microsoft.Component.MSBuild -property installationPath
+          if (!$vs) { throw 'MSBuild installation not found' }
+          $toolset = Get-ChildItem "$vs/VC/Tools/MSVC/14.16.*" -Directory -ErrorAction SilentlyContinue | Select-Object -Last 1
+          if (!$toolset -or !(Test-Path "$($toolset.FullName)/atlmfc/include/afxwin.h")) {
+            $installer = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vs_installer.exe'
+            & $installer modify --installPath "$vs" --add Microsoft.VisualStudio.Component.VC.v141.x86.x64 --add Microsoft.VisualStudio.Component.VC.v141.MFC --quiet --norestart
+            if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne 3010) { throw "Visual Studio installer failed: $LASTEXITCODE" }
+          }
+          $toolset = Get-ChildItem "$vs/VC/Tools/MSVC/14.16.*" -Directory -ErrorAction SilentlyContinue | Select-Object -Last 1
+          if (!$toolset -or !(Test-Path "$($toolset.FullName)/atlmfc/include/afxwin.h")) {
+            throw 'MSVC v141 with MFC is unavailable on this runner'
+          }
+
+      - name: Build Windows 11 Release x64
+        shell: pwsh
+        run: .\build-windows11.ps1 -Configuration Release
+
+      - name: Upload portable MPC-HC x64
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MPC-HC-Windows-x64
+          path: bin/mpc-hc_x64/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload build logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MPC-HC-build-logs
+          path: build/*build.log
+          if-no-files-found: ignore
