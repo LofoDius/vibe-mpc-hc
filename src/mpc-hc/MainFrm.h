@@ -400,6 +400,7 @@ public:
     // Attributes
 public:
     bool m_fFullScreen;
+    ULONGLONG m_fullscreenPauseStarted = 0;
     bool m_fFirstFSAfterLaunchOnFS;
     bool m_fStartInD3DFullscreen;
 

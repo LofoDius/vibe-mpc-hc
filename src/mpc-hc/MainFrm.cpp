@@ -1857,6 +1857,19 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent)
             }
             break;
         case TIMER_STREAMPOSPOLLER2:
+            // Use elapsed time so delayed timer messages do not extend the timeout.
+            if (GetLoadState() == MLS::LOADED && !m_fAudioOnly
+                    && (m_fFullScreen || IsD3DFullScreenMode()) && GetMediaState() == State_Paused) {
+                const ULONGLONG now = GetTickCount64();
+                if (!m_fullscreenPauseStarted) {
+                    m_fullscreenPauseStarted = now;
+                } else if (now - m_fullscreenPauseStarted >= 10 * 60 * 1000ULL) {
+                    m_fullscreenPauseStarted = 0;
+                    OnViewFullscreen();
+                }
+            } else {
+                m_fullscreenPauseStarted = 0;
+            }
             if (GetLoadState() == MLS::LOADED) {
                 switch (GetPlaybackMode()) {
                     case PM_FILE:
@@ -7304,6 +7317,7 @@ void CMainFrame::OnPlaySeekSet()
 
 void CMainFrame::SetTimersPlay()
 {
+    m_fullscreenPauseStarted = 0;
     SetTimer(TIMER_STREAMPOSPOLLER, 40, nullptr);
     SetTimer(TIMER_STREAMPOSPOLLER2, 500, nullptr);
     SetTimer(TIMER_STATS, 1000, nullptr);
@@ -7311,6 +7325,7 @@ void CMainFrame::SetTimersPlay()
 
 void CMainFrame::KillTimersStop()
 {
+    m_fullscreenPauseStarted = 0;
     KillTimer(TIMER_STREAMPOSPOLLER2);
     KillTimer(TIMER_STREAMPOSPOLLER);
     KillTimer(TIMER_STATS);
@@ -9403,6 +9418,7 @@ CSize CMainFrame::GetVideoSize() const
 
 void CMainFrame::ToggleFullscreen(bool fToNearest, bool fSwitchScreenResWhenHasTo)
 {
+    m_fullscreenPauseStarted = 0;
     if (IsD3DFullScreenMode()) {
         ASSERT(FALSE);
         return;
@@ -9539,6 +9555,7 @@ void CMainFrame::ToggleFullscreen(bool fToNearest, bool fSwitchScreenResWhenHasT
 
 void CMainFrame::ToggleD3DFullscreen(bool fSwitchScreenResWhenHasTo)
 {
+    m_fullscreenPauseStarted = 0;
     CComQIPtr<ID3DFullscreenControl> pD3DFS;
     if (m_pMFVDC) {
         pD3DFS = m_pMFVDC;
@@ -15001,6 +15018,7 @@ LRESULT CMainFrame::OnCurrentChannelInfoUpdated(WPARAM wParam, LPARAM lParam)
 // ==== Added by CASIMIR666
 void CMainFrame::SetLoadState(MLS eState)
 {
+    m_fullscreenPauseStarted = 0;
     m_eMediaLoadState = eState;
     SendAPICommand(CMD_STATE, L"%d", static_cast<int>(eState));
     if (eState == MLS::LOADED) {
